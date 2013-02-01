@@ -77,6 +77,10 @@ function bannerman_init() {
     add_action('banner_area_edit_form_fields', 'banner_area_edit_meta_form');
 
     bannerman_init_areas();
+
+
+//    global $_wp_additional_image_sizes;
+//    print_r($_wp_additional_image_sizes);
 }
 
 function bannerman_init_areas() {
@@ -86,6 +90,8 @@ function bannerman_init_areas() {
     foreach($results as $result) {
         preg_match('/.*:([^:]+)/', $result['option_name'], $matches);
         $sizeinfo = unserialize($result['option_value']);
+
+        //print_r($sizeinfo);
         add_image_size('banner_area-'.$matches[1], $sizeinfo['width'], $sizeinfo['height'], @$sizeinfo['crop'] == 1);
 
     }
