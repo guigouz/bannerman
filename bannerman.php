@@ -17,6 +17,9 @@ add_action('manage_posts_custom_column', 'bannerman_custom_column');
 
 add_image_size('banners-list-thumbnail', 500, 50, true);
 
+add_action( 'widgets_init', 'bannerman_load_widgets' );
+
+
 function bannerman_init() {
     $labels = array(
         'name' => 'Banners',
@@ -109,7 +112,7 @@ function bannerman_metaboxes($post) {
 
     remove_meta_box('postimagediv', 'banner', 'side');
     add_meta_box('postimagediv', __('Featured Image'), 'post_thumbnail_meta_box', 'banner', 'normal', 'high');
-    add_meta_box('bannerlinkbox', 'Link', 'banners_link_box', 'banner', 'normal', 'high');
+    add_meta_box('bannerlinkbox', 'Link', 'bannerman_link_box', 'banner', 'normal', 'high');
 }
 
 function bannerman_link_box() {
@@ -119,6 +122,9 @@ function bannerman_link_box() {
     //echo '<style type="text/css">#message a, #minor-publishing { display: none }</style>';
 }
 
+function bannerman_load_widgets() {
+    register_widget( 'Bannerman_Widget' );
+}
 
 /**
  * Modify which columns display when the admin views a list of header-image posts.
@@ -138,9 +144,8 @@ function bannerman_posts_columns($posts_columns) {
 }
 
 
+
 // Banner_area helpers
-
-
 
 function banner_area_add_meta_form() {
     echo '
@@ -197,6 +202,70 @@ function banner_area_meta_save($tag_ID) {
 }
 
 
+/*-----------------------------------------------------------------------------------*/
+// This starts the Banner Ad widget.
+/*-----------------------------------------------------------------------------------*/
+
+
+class Bannerman_Widget extends WP_Widget {
+
+    function Bannerman_Widget() {
+        /* Widget settings. */
+        $widget_ops = array( 'classname' => 'bannerman', 'description' => __('This a widget shows a banner from a particular area.', "bannerman") );
+        /* Widget control settings. */
+        $control_ops = array( 'width' => 300, 'height' => 350, 'id_base' => 'bannerman-widget' );
+        /* Create the widget. */
+        $this->WP_Widget( 'bannerman-widget', __('Bannerman Ad', "bannerman"), $widget_ops, $control_ops );
+    }
+
+    function widget( $args, $instance ) {
+        extract( $args );
+
+        /* Our variables from the widget settings. */
+        $title = apply_filters('widget_title', $instance['title'] );
+        $banneradcode = get_banner($instance['banner_area']);
+
+        /* Before widget (defined by themes). */
+        echo $before_widget;
+
+        /* Display the widget title if one was input (before and after defined by themes). */
+        if ( $title )
+            echo $before_title . $title . $after_title;
+
+        /* Display ad code. */
+        echo $banneradcode;
+
+        /* After widget (defined by themes). */
+        echo $after_widget;
+    }
+
+    function form( $instance ) {
+        /* Set up some default widget settings. */
+        $defaults = array(
+            'title' => __('Advertisement', "bannerman"));
+
+        $instance = wp_parse_args( (array) $instance, $defaults ); ?>
+
+        <!-- Widget Title: Text Input -->
+        <p><label for="<?php echo $this->get_field_id( 'title' ); ?>"><?php _e('Title:', "bannerman"); ?></label>
+            <input id="<?php echo $this->get_field_id( 'title' ); ?>" name="<?php echo $this->get_field_name( 'title' ); ?>" value="<?php echo $instance['title']; ?>" style="width:100%;" /></p>
+
+        <!-- banneradcode: Text Input -->
+        <?php $banner_areas = get_terms( 'banner_area', 'hide_empty=0' ); ?>
+        <p><label for="<?php echo $this->get_field_id( 'banner_area' ); ?>"><?php _e('Banner Area:', "bannerman"); ?></label>
+
+
+            <select id="<?php echo $this->get_field_id( 'banner_area' ); ?>" name="<?php echo $this->get_field_name( 'banner_area' ); ?>" style="width:100%;"><?php echo $instance['banner_area']; ?>
+            <?php foreach($banner_areas as $area): ?>
+            <option value="<?php echo $area->slug ?>" <?php if($instance['banner_area'] == $area->slug) echo 'selected'; ?>><?php echo $area->name ?></option>
+
+
+            <?php endforeach; ?>
+            </select></p>
+
+    <?php
+    }
+}
 
 
 /*
