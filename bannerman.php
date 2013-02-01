@@ -37,8 +37,23 @@ function bannerman_init() {
         'supports' => array('thumbnail')
     ));
 
+
+    $labels = array(
+        'name'                => _x( 'Áreas', 'taxonomy general name' ),
+        'singular_name'       => _x( 'Área', 'taxonomy singular name' ),
+        'search_items'        => __( 'Pesquisar Áreas', 'bannerman' ),
+        'all_items'           => __( 'Todas as Áreas', 'bannerman' ),
+        'parent_item'         => __( 'Área mãe', 'bannerman' ),
+        'parent_item_colon'   => __( 'Área mãe:' ),
+        'edit_item'           => __( 'Editar Área' ),
+        'update_item'         => __( 'Atualizar Área' ),
+        'add_new_item'        => __( 'Adicionar nova Área' ),
+        'new_item_name'       => __( 'Nome da Área' ),
+        'menu_name'           => __( 'Área' )
+    );
+
     register_taxonomy('banner_area', 'banner', array(
-        'label' => 'Áreas',
+        'labels' => $labels,
         'public' => false,
         'show_ui' => true,
         'hierarchical' => true,
