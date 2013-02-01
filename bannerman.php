@@ -66,7 +66,7 @@ function bannerman_init_areas() {
     $results = $wpdb->get_results("select option_name, option_value from $wpdb->options where option_name like 'banner_area-meta:%'", ARRAY_A);
 
     foreach($results as $result) {
-        preg_match('/.*:([^:]+)', $result['option_name'], $matches);
+        preg_match('/.*:([^:]+)/', $result['option_name'], $matches);
         $sizeinfo = unserialize($result['option_value']);
         add_image_size('banner_area-'.$matches[1], $sizeinfo['width'], $sizeinfo['height'], @$sizeinfo['crop']);
 
@@ -131,21 +131,21 @@ function banner_area_add_meta_form() {
     echo '
 <div class="form-field">
     <label for="bannerman-width">Tamanho</label>
-    <input type="text" size="3" value="" style="width: 50px;" id="bannerman-width" name="banner_area_meta[size][]">x
-    <input type="text" size="3" value="" style="width: 50px;" id="bannerman-height" name="banner_area_meta[size][]">
+    <input type="text" size="3" value="" style="width: 50px;" id="bannerman-width" name="banner_area_meta[width]">x
+    <input type="text" size="3" value="" style="width: 50px;" id="bannerman-height" name="banner_area_meta[height]">
     <p>O tamanho do banner</p>
 </div>';
 }
 
 function banner_area_edit_meta_form() {
-    $width = banner_area_meta($_GET['tag_ID'], 'width');
-    $height = banner_area_meta($_GET['tag_ID'], 'height');
+    $term = get_term($_GET['tag_ID'], 'banner_area');
+    $meta = banner_area_meta($term->slug);
 
     echo '
 <tr class="form-field">
     <th valign="top" scope="row"><label for="bannerman-width">Tamanho</label></th>
-    <td><input type="text" size="3" value="'.$width.'" id="bannerman-width" name="banner_area_meta[size][]">x
-    <input type="text" size="3" value="'.$height.'" id="bannerman-height" name="banner_area_meta[size][]">
+    <td><input type="text" size="3" style="width: 50px;" value="'.$meta['width'].'" id="bannerman-width" name="banner_area_meta[width]">x
+    <input type="text" size="3" style="width: 50px;" value="'.$meta['height'].'" id="bannerman-height" name="banner_area_meta[height]">
     <p>O tamanho do banner</p>
     </td>
 
@@ -171,7 +171,7 @@ function banner_area_meta_delete($tag_ID) {
 function banner_area_meta_save($tag_ID) {
 
     $slug = $_POST['slug'];
-    if (!empty($_POST['banner_area_meta']['size'])) {
+    if (!empty($_POST['banner_area_meta'])) {
         $meta = banner_area_meta($slug);
         foreach ($_POST['banner_area_meta'] as $k => $v) {
             $meta[$k] = $v;
