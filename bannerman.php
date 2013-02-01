@@ -204,8 +204,48 @@ function banner_area_meta_save($tag_ID) {
 }
 
 
+
+
+/*
+ * Utility functions
+ */
+
+function banner($area, $count = 1, $orderby = 'rand') {
+    echo get_banner($area, $count, $orderby);
+}
+
+
+function get_banner($area, $count = 1, $orderby = 'rand') {
+
+    $q = new WP_Query(array(
+        'post_type' => 'banner',
+        'posts_per_page' => $count,
+        'tax_query' => array(
+            array(
+                'taxonomy' => 'banner_area',
+                'field' => is_numeric($area) ? 'id' : 'slug',
+                'terms' => $area
+            )
+        ),
+        'orderby' => $orderby
+    ));
+
+    // TODO configurar o tamanho de cada área (metadata)
+
+    $arr = $q->get_posts();
+
+    //print_r($arr);
+    return sprintf('<a href="%s" target="_blank">%s</a>',
+        empty($arr[0]->post_content) ? '#' : $arr[0]->post_content,
+        get_the_post_thumbnail($arr[0]->ID, 'banner_area-'.$area)
+    );
+
+}
+
+
+
 /*-----------------------------------------------------------------------------------*/
-// This starts the Banner Ad widget.
+// This starts the Bannerman widget.
 /*-----------------------------------------------------------------------------------*/
 
 
@@ -215,7 +255,7 @@ class Bannerman_Widget extends WP_Widget {
         /* Widget settings. */
         $widget_ops = array( 'classname' => 'bannerman', 'description' => __('This a widget shows a banner from a particular area.', "bannerman") );
         /* Widget control settings. */
-        $control_ops = array( 'width' => 300, 'height' => 350, 'id_base' => 'bannerman-widget' );
+        $control_ops = array( 'id_base' => 'bannerman-widget' );
         /* Create the widget. */
         $this->WP_Widget( 'bannerman-widget', __('Bannerman Ad', "bannerman"), $widget_ops, $control_ops );
     }
@@ -258,50 +298,13 @@ class Bannerman_Widget extends WP_Widget {
 
 
             <select id="<?php echo $this->get_field_id( 'banner_area' ); ?>" name="<?php echo $this->get_field_name( 'banner_area' ); ?>" style="width:100%;"><?php echo $instance['banner_area']; ?>
-            <?php foreach($banner_areas as $area): ?>
-            <option value="<?php echo $area->slug ?>" <?php if($instance['banner_area'] == $area->slug) echo 'selected'; ?>><?php echo $area->name ?></option>
+                <?php foreach($banner_areas as $area): ?>
+                    <option value="<?php echo $area->slug ?>" <?php if($instance['banner_area'] == $area->slug) echo 'selected'; ?>><?php echo $area->name ?></option>
 
 
-            <?php endforeach; ?>
+                <?php endforeach; ?>
             </select></p>
 
     <?php
     }
-}
-
-
-/*
- * Utility functions
- */
-
-function banner($area, $count = 1, $orderby = 'rand') {
-    echo get_banner($area, $count, $orderby);
-}
-
-
-function get_banner($area, $count = 1, $orderby = 'rand') {
-
-    $q = new WP_Query(array(
-        'post_type' => 'banner',
-        'posts_per_page' => $count,
-        'tax_query' => array(
-            array(
-                'taxonomy' => 'banner_area',
-                'field' => is_numeric($area) ? 'id' : 'slug',
-                'terms' => $area
-            )
-        ),
-        'orderby' => $orderby
-    ));
-
-    // TODO configurar o tamanho de cada área (metadata)
-
-    $arr = $q->get_posts();
-
-    //print_r($arr);
-    return sprintf('<a href="%s" target="_blank">%s</a>',
-        empty($arr[0]->post_content) ? '#' : $arr[0]->post_content,
-        get_the_post_thumbnail($arr[0]->ID, 'banner_area-'.$area)
-    );
-
 }
