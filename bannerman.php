@@ -153,6 +153,7 @@ function banner_area_add_meta_form() {
     <label for="bannerman-width">Tamanho</label>
     <input type="text" size="3" value="" style="width: 50px;" id="bannerman-width" name="banner_area_meta[width]">x
     <input type="text" size="3" value="" style="width: 50px;" id="bannerman-height" name="banner_area_meta[height]">
+    <input type="checkbox" value="1" name="banner_area_meta[crop]"/> Recortar
     <p>O tamanho do banner</p>
 </div>';
 }
@@ -166,6 +167,7 @@ function banner_area_edit_meta_form() {
     <th valign="top" scope="row"><label for="bannerman-width">Tamanho</label></th>
     <td><input type="text" size="3" style="width: 50px;" value="'.$meta['width'].'" id="bannerman-width" name="banner_area_meta[width]">x
     <input type="text" size="3" style="width: 50px;" value="'.$meta['height'].'" id="bannerman-height" name="banner_area_meta[height]">
+    <input type="checkbox" value="1" name="banner_area_meta[crop]" '.($meta['crop'] == 1 ? 'checked' : '').'/> Recortar
     <p>O tamanho do banner</p>
     </td>
 
