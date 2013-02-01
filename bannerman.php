@@ -86,7 +86,7 @@ function bannerman_init_areas() {
     foreach($results as $result) {
         preg_match('/.*:([^:]+)/', $result['option_name'], $matches);
         $sizeinfo = unserialize($result['option_value']);
-        add_image_size('banner_area-'.$matches[1], $sizeinfo['width'], $sizeinfo['height'], @$sizeinfo['crop']);
+        add_image_size('banner_area-'.$matches[1], $sizeinfo['width'], $sizeinfo['height'], @$sizeinfo['crop'] == 1);
 
     }
 }
