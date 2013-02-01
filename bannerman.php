@@ -225,6 +225,7 @@ function get_banner($area, $count = 1, $orderby = 'rand') {
 
     $q = new WP_Query(array(
         'post_type' => 'banner',
+        'post_status' => 'publish',
         'posts_per_page' => $count,
         'tax_query' => array(
             array(
@@ -238,6 +239,10 @@ function get_banner($area, $count = 1, $orderby = 'rand') {
 
     // TODO configurar o tamanho de cada área (metadata)
 
+    if(!$q->have_posts()) {
+        return '';
+    }
+    
     $arr = $q->get_posts();
 
     //print_r($arr);
