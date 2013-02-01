@@ -15,11 +15,7 @@ add_action('add_meta_boxes_banner', 'bannerman_metaboxes');
 add_filter('manage_banner_posts_columns', 'bannerman_posts_columns');
 add_action('manage_posts_custom_column', 'bannerman_custom_column');
 
-add_image_size('home-topo', 600);
-add_image_size('home-centro', 380);
-add_image_size('home-rodape', 450);
 add_image_size('banners-list-thumbnail', 500, 50, true);
-
 
 function bannerman_init() {
     $labels = array(
@@ -54,6 +50,40 @@ function bannerman_init() {
             'assign_terms' => 'edit_posts'
         )
     ));
+
+
+    add_action('create_banner_area', 'banner_area_meta_save');
+    add_action('edit_banner_area', 'banner_area_meta_save');
+    add_action('delete_banner_area', 'banner_area_meta_delete');
+    add_action('banner_area_add_form_fields', 'banner_area_add_meta_form');
+    add_action('banner_area_edit_form_fields', 'banner_area_edit_meta_form');
+
+    bannerman_init_areas();
+}
+
+function bannerman_init_areas() {
+    global $wpdb;
+    $results = $wpdb->get_results("select option_name, option_value from $wpdb->options where option_name like 'banner_area-meta:%'", ARRAY_A);
+
+    foreach($results as $result) {
+        preg_match('/.*:([^:]+)', $result['option_name'], $matches);
+        $sizeinfo = unserialize($result['option_value']);
+        add_image_size('banner_area-'.$matches[1], $sizeinfo['width'], $sizeinfo['height'], @$sizeinfo['crop']);
+
+    }
+}
+
+
+
+/**
+ * Custom column output when admin is view the header-image post list.
+ */
+function bannerman_custom_column($column_name) {
+    global $post;
+
+    if ($column_name == 'banner') {
+        echo "<a href='", get_edit_post_link($post->ID), "'>", get_the_post_thumbnail($post->ID, 'banners-list-thumbnail'), "</a>";
+    }
 }
 
 /**
@@ -93,20 +123,75 @@ function bannerman_posts_columns($posts_columns) {
 }
 
 
-/**
- * Custom column output when admin is view the header-image post list.
- */
-function bannerman_custom_column($column_name) {
-    global $post;
+// Banner_area helpers
 
-    if ($column_name == 'banner') {
-        echo "<a href='", get_edit_post_link($post->ID), "'>", get_the_post_thumbnail($post->ID, 'banners-list-thumbnail'), "</a>";
+
+
+function banner_area_add_meta_form() {
+    echo '
+<div class="form-field">
+    <label for="bannerman-width">Tamanho</label>
+    <input type="text" size="3" value="" style="width: 50px;" id="bannerman-width" name="banner_area_meta[size][]">x
+    <input type="text" size="3" value="" style="width: 50px;" id="bannerman-height" name="banner_area_meta[size][]">
+    <p>O tamanho do banner</p>
+</div>';
+}
+
+function banner_area_edit_meta_form() {
+    $width = banner_area_meta($_GET['tag_ID'], 'width');
+    $height = banner_area_meta($_GET['tag_ID'], 'height');
+
+    echo '
+<tr class="form-field">
+    <th valign="top" scope="row"><label for="bannerman-width">Tamanho</label></th>
+    <td><input type="text" size="3" value="'.$width.'" id="bannerman-width" name="banner_area_meta[size][]">x
+    <input type="text" size="3" value="'.$height.'" id="bannerman-height" name="banner_area_meta[size][]">
+    <p>O tamanho do banner</p>
+    </td>
+
+</tr>';
+}
+
+function banner_area_meta($slug, $key = null) {
+    $meta = get_option("banner_area-meta:$slug", array());
+
+    if ($key) {
+        return @$meta[$key];
+    }
+    else {
+        return $meta;
     }
 }
+
+function banner_area_meta_delete($tag_ID) {
+    $term = get_term($tag_ID, 'banner_area');
+    delete_option("banner_area-meta:$term->slug");
+}
+
+function banner_area_meta_save($tag_ID) {
+
+    $slug = $_POST['slug'];
+    if (!empty($_POST['banner_area_meta']['size'])) {
+        $meta = banner_area_meta($slug);
+        foreach ($_POST['banner_area_meta'] as $k => $v) {
+            $meta[$k] = $v;
+        }
+
+        update_option("banner_area-meta:$slug", $meta);
+    }
+}
+
+
+
 
 /*
  * Utility functions
  */
+
+function banner($area, $count = 1, $orderby = 'rand') {
+    echo get_banner($area, $count, $orderby);
+}
+
 
 function get_banner($area, $count = 1, $orderby = 'rand') {
 
@@ -128,9 +213,9 @@ function get_banner($area, $count = 1, $orderby = 'rand') {
     $arr = $q->get_posts();
 
     //print_r($arr);
-    return sprintf('<a href="%s">%s</a>',
+    return sprintf('<a href="%s" target="_blank">%s</a>',
         empty($arr[0]->post_content) ? '#' : $arr[0]->post_content,
-        get_the_post_thumbnail($arr[0]->ID, $area)
+        get_the_post_thumbnail($arr[0]->ID, 'banner_area-'.$area)
     );
 
 }
