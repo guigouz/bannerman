@@ -242,7 +242,7 @@ function get_banner($area, $count = 1, $orderby = 'rand') {
     if(!$q->have_posts()) {
         return '';
     }
-    
+
     $arr = $q->get_posts();
 
     //print_r($arr);
